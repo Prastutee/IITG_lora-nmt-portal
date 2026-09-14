@@ -402,9 +402,7 @@ def execute_nmt_inference(source_text: str, pipeline: dict) -> dict:
             
             translated_text = tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
             
-            # Robust alignment: loop through generated sequence and safely pair with output scores
             generated_ids = outputs.sequences[0]
-            # Handle starting token offset if present
             start_idx = 1 if len(outputs.scores) == len(generated_ids) - 1 else 0
             
             for i, score_tensor in enumerate(outputs.scores):
@@ -418,14 +416,15 @@ def execute_nmt_inference(source_text: str, pipeline: dict) -> dict:
                     continue
                 
                 import torch
-                probs = torch.nn.functional.softmax(score_tensor[0], dim=-1)
+                step_logits = score_tensor[0] if score_tensor.ndim > 1 else score_tensor
+                probs = torch.nn.functional.softmax(step_logits, dim=-1)
                 prob = float(probs[token_id].item())
-                token_confidences.append((token_str, round(max(0.05, min(0.999, prob)), 3)))
+                
+                token_confidences.append((token_str, round(max(0.01, min(0.999, prob)), 3)))
                 
         except Exception as e:
             pipeline["loaded"] = False
             
-    # Fallback generator if real model call fails or isn't present
     if not pipeline["loaded"] or not token_confidences:
         np.random.seed(abs(hash(source_text)) % (2**32))
         bengali_bank = [
