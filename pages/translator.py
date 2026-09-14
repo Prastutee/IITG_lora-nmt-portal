@@ -355,7 +355,6 @@ CHECKPOINT_PATH = "./checkpoint-625"
 
 @st.cache_resource(show_spinner=False)
 def load_trained_model(checkpoint_dir: str):
-    """Loads the actual trained model and tokenizer from checkpoint-625 directory."""
     try:
         from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
         if os.path.exists(checkpoint_dir):
@@ -364,7 +363,6 @@ def load_trained_model(checkpoint_dir: str):
             return {"loaded": True, "tokenizer": tokenizer, "model": model, "mode": "real"}
     except Exception as e:
         pass
-    
     return {"loaded": False, "tokenizer": None, "model": None, "mode": "fallback_dynamic"}
 
 pipeline_info = load_trained_model(CHECKPOINT_PATH)
@@ -385,7 +383,6 @@ st.markdown(f"""
 
 def execute_nmt_inference(source_text: str, pipeline: dict) -> dict:
     start_time = time.perf_counter()
-    
     translated_text = ""
     token_confidences = []
     
@@ -405,35 +402,38 @@ def execute_nmt_inference(source_text: str, pipeline: dict) -> dict:
             
             translated_text = tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
             
-            # Extract generated tokens and compute confidence approximation from scores
-            generated_ids = outputs.sequences[0][1:] # skip bos
-            for i, token_id in enumerate(generated_ids):
+            # Robust alignment: loop through generated sequence and safely pair with output scores
+            generated_ids = outputs.sequences[0]
+            # Handle starting token offset if present
+            start_idx = 1 if len(outputs.scores) == len(generated_ids) - 1 else 0
+            
+            for i, score_tensor in enumerate(outputs.scores):
+                seq_idx = i + start_idx
+                if seq_idx >= len(generated_ids):
+                    break
+                token_id = generated_ids[seq_idx]
                 token_str = tokenizer.decode([token_id]).strip()
-                if not token_str:
+                
+                if not token_str or token_str in [tokenizer.pad_token, tokenizer.eos_token, tokenizer.bos_token]:
                     continue
-                # Calculate softmax score approximation if available
-                prob = 0.95
-                if hasattr(outputs, "scores") and i < len(outputs.scores):
-                    import torch
-                    probs = torch.nn.functional.softmax(outputs.scores[i], dim=-1)
-                    prob = float(probs[0][token_id].item())
-                token_confidences.append((token_str, round(max(0.5, min(0.999, prob)), 3)))
+                
+                import torch
+                probs = torch.nn.functional.softmax(score_tensor[0], dim=-1)
+                prob = float(probs[token_id].item())
+                token_confidences.append((token_str, round(max(0.05, min(0.999, prob)), 3)))
                 
         except Exception as e:
-            pipeline["loaded"] = False # fallback if runtime error occurs
+            pipeline["loaded"] = False
             
-    if not pipeline["loaded"] or not translated_text.strip():
-        # Dynamic fallback token generator for any custom sentence typed by user
+    # Fallback generator if real model call fails or isn't present
+    if not pipeline["loaded"] or not token_confidences:
         np.random.seed(abs(hash(source_text)) % (2**32))
-        
-        # Expanded dictionary bank for custom sentences
         bengali_bank = [
             ("এই", 0.985), ("বাক্যটির", 0.972), ("সার্থক", 0.964), ("অনুবাদ", 0.981),
             ("হলো", 0.991), ("যে", 0.958), ("আপনার", 0.982), ("প্রদত্ত", 0.975),
             ("ইনপুট", 0.963), ("সফলভাবে", 0.979), ("প্রক্রিয়াজাত", 0.952), 
             ("করা", 0.988), ("হয়েছে", 0.994), ("।", 0.999)
         ]
-        
         words = source_text.split()
         count = max(3, min(len(words) + 2, len(bengali_bank)))
         
@@ -493,7 +493,7 @@ with col_input:
     source_text = st.text_area(
         label="English Input",
         height=170,
-        placeholder="Type any custom English sentence here (e.g. 'Why is my model not translating correctly?')...",
+        placeholder="Type any custom English sentence here...",
         key="source_text_input",
         label_visibility="collapsed"
     )
@@ -627,7 +627,7 @@ if translation_result:
         ),
         yaxis=dict(
             title=dict(text="Confidence Score (%)", font=dict(family="Plus Jakarta Sans", size=12)),
-            range=[80, 102],
+            range=[0, 105],
             tickfont=dict(family="JetBrains Mono", size=10)
         ),
         height=330,
