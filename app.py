@@ -154,9 +154,6 @@ div.stButton > button:hover {
 
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-# Render Top Navigation Bar
-render_top_navbar(current_page="overview")
-
 st.markdown("""
 <div class="portal-hero">
     <div class="hero-pill-badge">Academic Research Portal</div>
