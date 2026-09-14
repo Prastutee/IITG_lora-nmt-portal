@@ -416,8 +416,14 @@ def execute_nmt_inference(source_text: str, pipeline: dict) -> dict:
                     continue
                 
                 import torch
-                step_logits = score_tensor[0] if score_tensor.ndim > 1 else score_tensor
-                probs = torch.nn.functional.softmax(step_logits, dim=-1)
+                step_scores = score_tensor[0] if score_tensor.ndim > 1 else score_tensor
+                
+                # Correct handling for log-probabilities vs raw logits
+                if step_scores.max() <= 0.0:
+                    probs = torch.exp(step_scores)
+                else:
+                    probs = torch.nn.functional.softmax(step_scores, dim=-1)
+                    
                 prob = float(probs[token_id].item())
                 
                 token_confidences.append((token_str, round(max(0.01, min(0.999, prob)), 3)))
