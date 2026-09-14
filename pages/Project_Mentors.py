@@ -3,6 +3,43 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
+import streamlit as st
+
+def render_top_navbar(current_page="mentors"):
+    """Renders a consistent top navigation bar across pages."""
+    st.markdown(
+        """
+        <style>
+            .nav-container {
+                display: flex;
+                justify-content: space-around;
+                background-color: #f0f2f6;
+                padding: 10px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .nav-link {
+                text-decoration: none;
+                font-weight: bold;
+                color: #31333F;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Simple navigation links header
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("🏠 Home / Translator", use_container_width=True):
+            st.switch_page("app.py")
+    with col2:
+        if st.button("📜 Project Mentors", use_container_width=True):
+            st.switch_page("pages/Project_Mentors.py")
+    with col3:
+        if st.button("🌐 Translator Tool", use_container_width=True):
+            st.switch_page("pages/translator.py")
+    st.markdown("---")
 
 st.set_page_config(
     page_title="Architecture & Mentors | LoRA NMT",
