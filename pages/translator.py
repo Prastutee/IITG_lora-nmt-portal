@@ -505,15 +505,14 @@ with col_input:
         with preset_cols[idx]:
             if st.button(f"Query 0{idx+1}", key=f"preset_btn_{idx}", use_container_width=True):
                 st.session_state["source_text_input"] = prompt_text
-                # Clear old result so output updates reactively on rerun
                 st.session_state.pop("latest_translation", None)
                 st.rerun()
 
     source_text = st.text_area(
         label="English Input",
-        value=st.session_state.get("source_text_input", ""),
         height=170,
         placeholder="Enter academic or technical English sentences for translation...",
+        key="source_text_input",
         label_visibility="collapsed"
     )
     
