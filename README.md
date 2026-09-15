@@ -17,7 +17,7 @@
 </p>
 
 <ul style="font-size: 1rem; color: #334155; line-height: 1.6;">
-    <li><strong>Frontend Web Dashboard:</strong> <a href="#" target="_blank">Access the Live Streamlit App</a> <em>(Replace with your deployed app link)</em></li>
+    <li><strong>Frontend Web Dashboard:</strong> <a href="#" target="_blank">Access the Live Streamlit App</a> <em>(https://iitglora-nmt-app-ingrp69afvrb33cunykgru.streamlit.app/)</em></li>
     <li><strong>Active Model Checkpoint:</strong> <code>./checkpoint-625</code></li>
 </ul>
 
@@ -30,7 +30,7 @@
 
 <!-- Embedded Video (YouTube / Vimeo) -->
 <div align="center" style="margin: 1.5rem 0;">
-  <iframe width="560" height="315" src="YOUR_YOUTUBE_OR_VIMEO_VIDEO_URL" title="Project Video Presentation" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  <iframe width="560" height="315" src="https://youtu.be/rPznPJnsovw?si=AG8OhkaJfFGAyyvG" title="Project Video Presentation" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <p style="font-size: 0.85rem; color: #64748b; text-align: center;"><em>(Remember to replace <code>YOUR_YOUTUBE_OR_VIMEO_VIDEO_URL</code> with your actual video link)</em></p>
 
